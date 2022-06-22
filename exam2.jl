@@ -21,6 +21,8 @@ make_animations = true
 
 ###############################################################################
 
+ylim = (-0.8, 1.1)
+
 base_plt = plot(
     size = (1000, 600),
     xtickfontsize = 14,
@@ -148,7 +150,7 @@ end
 
 function plot_NN_no_ode(tt, y_hat_no_ode_tt)
     plt = deepcopy(base_plt)
-    plot!(plt, xlabel = "t", ylabel = "x(t)", xlim = tspan, ylim = (-0.8, 1.1))
+    plot!(plt, xlabel = "t", ylabel = "x(t)", xlim = tspan, ylim = ylim)
     scatter!(plt, sol_t, sol_x, label = "Data", color = 1, markersize = 8)
     plot_NN_no_ode!(plt, tt, y_hat_no_ode_tt)
     return plt
@@ -289,7 +291,7 @@ end
 
 function plot_neural_prob(neuralsol)
     plt = deepcopy(base_plt)
-    plot!(plt, xlabel = "t", ylabel = "x(t)", xlim = tspan, ylim = (-0.8, 1.1))
+    plot!(plt, xlabel = "t", ylabel = "x(t)", xlim = tspan, ylim = ylim)
     scatter!(plt, sol_t, sol_x, label = "Data", color = 1, markersize = 8)
     plot_neural_prob!(plt, neuralsol)
     return plt
@@ -373,7 +375,7 @@ display(plot_sol_ode_extrapolated)
 
 NN_optsol = re(optsol[2:end])
 
-xx = -10:0.1:10
+xx = -1:0.1:1
 plot_nn = deepcopy(base_plt)
 plot!(
     plot_nn,
@@ -400,7 +402,7 @@ display(plot_nn)
 plot_phase_space = deepcopy(base_plt)
 plot!(plot_phase_space, xlabel = "x(t)", ylabel = "v(t)")
 plot!(plot_phase_space, sol_true, vars = (1, 2), label = "Truth", lw = 2)
-plot!(plot_phase_space, neuralsol_optsol, vars = (1, 2), label = "NN", lw = 2)
+plot!(plot_phase_space, neuralsol_optsol, vars = (1, 2), label = "NN", lw = 2, xlim=(-0.7, 1))
 save_figures && savefig(plot_phase_space, "figures/phase_space.pdf")
 display(plot_phase_space)
 
@@ -425,8 +427,8 @@ basis = Basis(h, u);
 println(basis)
 
 λs = exp10.(-5:0.1:10);
-# opt = ADMM(λs)
-opt = STLSQ(λs)
+opt = ADMM(λs)
+# opt = STLSQ(λs)
 res = solve(problem, basis, opt);
 system = result(res);
 params = parameters(res);
@@ -513,7 +515,7 @@ plot!(
     color = "black",
     label = "Turing",
     lw = 2,
-    ylim = (-0.8, 1.1),
+    ylim = ylim,
 )
 
 save_figures && savefig(plot_turing, "figures/turing.pdf")
