@@ -9,7 +9,6 @@ using Measures
 using DataDrivenDiffEq
 using ModelingToolkit
 using LinearAlgebra
-
 using Turing
 using Optim
 using StatsPlots
@@ -67,8 +66,9 @@ plot(sol_true, vars = (1, 2), label = "", xlabel = "x(t)", ylabel = "v(t)")
 
 ###############################################################################
 
-
 function get_data(prob_true)
+
+    Random.seed!(2)
 
     sol_data = solve(prob_true, saveat = 1.0)
 
@@ -201,6 +201,7 @@ if make_animations
 end
 
 plot_sol_no_ode = deepcopy(plot_sol)
+plot!(plot_sol_no_ode; ylim = ylim)
 plot_NN_no_ode!(plot_sol_no_ode, tt, y_hat_no_ode_tt)
 save_figures && savefig(plot_sol_no_ode, "figures/no_ode.pdf")
 display(plot_sol_no_ode)
@@ -217,6 +218,7 @@ plot!(
     color = 1,
     lw = 2,
     xlims = tspan_extrapolate,
+    ylim = ylim,
 )
 
 y_hat_no_ode_extrapolate = [re_no_ode(optsol_no_ode)(t) for t in tt_extrapolate];
@@ -228,7 +230,7 @@ plot!(
     line = :dash,
     color = 2,
     lw = 2,
-    legend = :topleft,
+    legend = :bottomright,
 )
 
 save_figures && savefig(plot_sol_no_ode_extrapolated, "figures/no_ode_etxrapolated.pdf")
@@ -402,7 +404,14 @@ display(plot_nn)
 plot_phase_space = deepcopy(base_plt)
 plot!(plot_phase_space, xlabel = "x(t)", ylabel = "v(t)")
 plot!(plot_phase_space, sol_true, vars = (1, 2), label = "Truth", lw = 2)
-plot!(plot_phase_space, neuralsol_optsol, vars = (1, 2), label = "NN", lw = 2, xlim=(-0.7, 1))
+plot!(
+    plot_phase_space,
+    neuralsol_optsol,
+    vars = (1, 2),
+    label = "NN",
+    lw = 2,
+    xlim = (-0.7, 1),
+)
 save_figures && savefig(plot_phase_space, "figures/phase_space.pdf")
 display(plot_phase_space)
 
@@ -509,14 +518,7 @@ end
 p_turing_mean = mean(chain1[[:b, :k]])[:, :mean]
 sol_turing_mean =
     solve(prob_symbolic_regression, Tsit5(); p = p_turing_mean, saveat = 0.1, save_idxs = 1);
-plot!(
-    plot_turing,
-    sol_turing_mean;
-    color = "black",
-    label = "Turing",
-    lw = 2,
-    ylim = ylim,
-)
+plot!(plot_turing, sol_turing_mean; color = "black", label = "Turing", lw = 2, ylim = ylim)
 
 save_figures && savefig(plot_turing, "figures/turing.pdf")
 display(plot_turing)
