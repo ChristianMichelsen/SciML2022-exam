@@ -15,8 +15,8 @@ using StatsPlots
 
 ###############################################################################
 
-save_figures = true
-make_animations = true
+save_figures = false
+make_animations = false
 
 ###############################################################################
 
@@ -190,9 +190,8 @@ optf_no_ode = OptimizationFunction(loss_no_ode, Optimization.AutoZygote())
 optprob_no_ode = OptimizationProblem(optf_no_ode, p_NN_no_ode);
 optsol_no_ode = solve(optprob_no_ode, PolyOpt(), callback = callback_no_ode);
 
-
+ℓ_no_ode, y_hat_no_ode_tt = loss_no_ode(optsol_no_ode)
 if make_animations
-    ℓ_no_ode, y_hat_no_ode_tt = loss_no_ode(optsol_no_ode)
     for _ = 1:400
         plt = plot_NN_no_ode(tt, y_hat_no_ode_tt, iter_no_ode, ℓ_no_ode)
         frame(animation_no_ode, plt)
@@ -502,7 +501,8 @@ map_estimate1 = Turing.optimize(model1, MAP())
 init_params1 = [map_estimate1.values.array for i = 1:4];
 chain1 = sample(model1, NUTS(0.65), MCMCThreads(), 1000, 4; init_params = init_params1)
 
-plot(chain1)
+plot_turing_chains = plot(chain1)
+save_figures && savefig(plot_turing_chains, "figures/turing_chains.pdf")
 
 
 
