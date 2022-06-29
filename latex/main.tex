@@ -3,13 +3,13 @@
 \usepackage{graphicx}
 \usepackage{amsfonts}
 \usepackage{float} % useful for H in figures
-\usepackage{url} % useful for the \path command
+\usepackage{hyperref} % useful for the \path command
 \usepackage[font={footnotesize}]{caption}
 \graphicspath{{../figures/}}
 
 \usepackage{fontspec}
 % \setmonofont{DejaVu Sans Mono}[Scale=0.8]
-\setmonofont{Consolas}[Scale=0.8]
+\setmonofont{Consolas}[Scale=0.85]
 
 
 
@@ -20,6 +20,7 @@
 \section*{SciML 2022 Exam}
 
 This is the exam solution for Christian Michelsen in the Ph.D. course SciML 2022 at DTU.
+All data is available at: \url{https://github.com/ChristianMichelsen/SciML2022-exam}.
 
 \vspace{1cm}
 
@@ -34,7 +35,7 @@ This is the exam solution for Christian Michelsen in the Ph.D. course SciML 2022
 \clearpage
 \section*{1: Damped Harmonic Oscillator}
 
-The damped harmonic oscillator (DHO) is, as the name suggests, a damped version of the classical harmonic oscillator (HO)
+The damped harmonic oscillator (DHO) is, as the name suggests, a damped version of the classical harmonic oscillator (HO):
 \begin{equation}
     m \ddot{x} + b\dot{x} + kx = 0.
     \label{eq:DHO}
@@ -44,7 +45,7 @@ Here $\dot{x}$ refers to the first derivative of $x$ with respect to time $t$, a
 As such, the DHO is an differential equation governed by Newton's second law (the first term),
 Hook's law (the last term) and the friction term (the second term).
 
-Without loss of generality, I set $m=1$ and use unitless variables.
+Without loss of generality, I set $m=1$ and use dimensionless variables.
 Equation \eqref{eq:DHO} can then be transformed to the following system:
 \begin{equation}
     \begin{split}
@@ -61,7 +62,7 @@ I solve \eqref{eq:DHO_2D} using \texttt{DifferentialEquations.jl} in Julia with 
         k &= 0.1 \\
         x_0 &= 1.0 \\
         v_0 &= 1.0 \\
-        t &\in [0, 40]
+        t &\in [0, 40],
     \end{split}
 \end{equation}
 where $x_0$ and $v_0$ are the initial conditions for $x$ and $v$.
@@ -101,7 +102,7 @@ This is even more apparent in the animations, see the attached file, \path{anima
 
 Another issue with this naive approach, is that the neural network solutions extrapolates very poorly.
 Compare the extrapolation of the neural network to the true solution, see Figure \ref{fig:NN_naive_extrapolation}.
-I know that the solution oscillates around zero and asymptotically approaches it.
+The solution oscillates around zero and asymptotically approaches it.
 Yet, the neural network solution increases rapidly away from the true solution -- it has lost all predictive power.
 
 \begin{figure}[H]
@@ -115,7 +116,7 @@ Yet, the neural network solution increases rapidly away from the true solution -
 
 \section*{2b: Neural ODE}
 
-Instead if fitting the neural network directly to the data, I can instead combine it with some prior knowledge about the model.
+Instead if fitting the neural network directly to the data, I combine it with some prior knowledge about the model.
 In this case, I assume that I already know Newton's second law and Hook's law.
 As such, it is only the friction term that is missing and what I want the neural network to learn.
 Using the same form as in \eqref{eq:DHO_2D}, I can write this as:
@@ -128,7 +129,7 @@ Using the same form as in \eqref{eq:DHO_2D}, I can write this as:
 \end{equation}
 where $\mathrm{NN}_\theta(v)$ is the neural network with parameters $\theta$.
 Here I have further incorporated the knowledge that the friction does not depend on position, but only velocity.
-Note that I use a similar same neural network as the one in 3a.
+Note that I use a similar same neural network as the one in section 2a.
 
 I now optimize the parameters of the neural network (and $k$), which reduces from a MSE loss of $583.8743$ to $0.3275$.
 Even though the loss is higher than for the naive neural network, the solution is a lot better, see Figure \ref{fig:NN_ODE}.
@@ -143,7 +144,7 @@ This is even more apparent in the animations, see the attached file, \path{anima
 \end{figure}
 
 Not only does this model not overfit, it also extrapolates a lot better, see Figure \ref{fig:NN_ODE_extrapolation}.
-Compare this to Figure \ref{fig:NN_naive_extrapolation} which XXX.
+Compare this to Figure \ref{fig:NN_naive_extrapolation} which quickly diverged from the true solution.
 
 \begin{figure}[H]
     \includegraphics[width=\linewidth]{with_ode_extrapolated.pdf}
@@ -213,7 +214,7 @@ Now that I know the functional form of the ODE, I can use the Bayesian inference
 to estimate the value of the unknown parameters, $b$ and $k$, using \texttt{Turing.jl}.
 
 I assume that $b$ is a random variable drawn from a normal distribution (truncated to be positive)
-and similar for $k$. I first compute the MAP estimate to initialize the MCMCM chains at this point.
+and similar for $k$. I first compute the MAP estimate to initialize the MCMC chains at this point.
 I then run 4 chains, each for 1000 iterations, using the NUTS sampler, see Figure \ref{fig:MCMC_chains}.
 I also estimate the size of the noise, $\sigma$, which is also shown in this figure.
 The noise is slightly overestimated, however both $b$ and $k$ matches the true values.
@@ -240,7 +241,14 @@ as a function of time.
 
 
 \section*{Conclusion}
-XXX
+In this small project, I have shown how fitting a neural network in the phase space,
+combined with prior knowledge, allows for better predictions compared to the naive approach.
+In addition, it also generalizes significantly better and extrapolates quite well.
+
+Using symbolic regresion, it is possible to retrieve the functional form of the
+dynamics that the neural network has learned to predict and which was missing
+from the ODE. Using this new functional form, it is possible to estimate the parameters using
+Bayesian MCMC inference.
 
 
 \end{document}
